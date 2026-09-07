@@ -1,14 +1,10 @@
-# .gitignore
+.coverage
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.env
-venv/
-*.sqlite3
-env/
-.vscode/
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
+htmlcov/
+instance/
+*.py[cod]
+*.egg-info/

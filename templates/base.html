@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Laboratorio reproducible de análisis de sentimiento en español">
+    <title>{% block title %}Spanish Sentiment Lab{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="{{ url_for('index') }}">Spanish Sentiment Lab</a>
+      <span class="eyebrow">Quality engineering case study</span>
+    </header>
+    <main id="main-content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div aria-live="polite">
+            {% for category, message in messages %}
+              <p class="notice notice--{{ category }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+    <footer>
+      Deterministic by default · Testable by design · No external service required
+    </footer>
+  </body>
+</html>

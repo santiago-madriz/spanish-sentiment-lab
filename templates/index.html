@@ -1,141 +1,31 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
+{% block title %}Cursos · Spanish Sentiment Lab{% endblock %}
+{% block content %}
+  <section class="hero">
+    <p class="eyebrow">API + web application</p>
+    <h1>Explore course feedback without hiding the quality risks.</h1>
+    <p>
+      This lab turns Spanish comments into a reproducible positive, negative, or
+      neutral signal. The default analyzer is intentionally simple so every result
+      can be understood and tested.
+    </p>
+  </section>
 
-<head>
-    <title>Satisfacción Cursos TEC</title>
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #8ed4e9;
-            margin: 0;
-            padding: 0;
-            color: #4a4a4a;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #4a4a4a;
-        }
-
-        .course-links {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        .course-link {
-            text-decoration: none;
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            color: #4a4a4a;
-            transition: box-shadow 0.3s, transform 0.3s;
-        }
-
-        .course-link:hover {
-            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .courses {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .course {
-            background-color: #f8f9fa;
-            padding: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-            transition: box-shadow 0.3s, transform 0.3s;
-        }
-
-        .course:hover {
-            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
-            transform: translateY(-2px);
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .sentiment-bar {
-            display: flex;
-            height: 20px;
-            border: 1px solid #000;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-top: 15px;
-        }
-
-        .sentiment {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .sentiment.positive {
-            background-color: #4caf50;
-        }
-
-        .sentiment.neutral {
-            background-color: #f0ad4e;
-        }
-
-        .sentiment.negative {
-            background-color: #d9534f;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <h1>Satisfacción Cursos TEC</h1>
-        <div class="course-links">
-            {% for course in courses %}
-            <a href="{{ url_for('course', course_id=course.id) }}" class="course-link">{{ course.name }}</a>
-            {% endfor %}
-        </div>
-        <div class="courses">
-            {% for course, sentiment, image_url in zip(courses, course_sentiments, course_images) %}
-            <div class="course">
-                <h2>{{ course.name }}</h2>
-                {% if image_url %}
-                <div>
-                    <img src="{{ image_url }}" alt="{{ course.name }} image"
-                        style="width: 100%; height: auto; border-radius: 5px;">
-                </div>
-                {% endif %}
-                <div class="sentiment-bar">
-                    <div class="sentiment positive" style="width: {{ sentiment.positive|round|int }}%;">{{
-                        sentiment.positive|round|int }}%</div>
-                    <div class="sentiment neutral" style="width: {{ sentiment.neutral|round|int }}%;">{{
-                        sentiment.neutral|round|int }}%</div>
-                    <div class="sentiment negative" style="width: {{ sentiment.negative|round|int }}%;">{{
-                        sentiment.negative|round|int }}%</div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
+  <section aria-labelledby="courses-heading">
+    <h2 id="courses-heading">Cursos</h2>
+    <div class="grid">
+      {% for course in courses %}
+        {% set summary = summaries[course.id] %}
+        <article class="card">
+          <h3><a href="{{ url_for('course', course_id=course.id) }}">{{ course.name }}</a></h3>
+          <p>{{ summary.total }} comentario{% if summary.total != 1 %}s{% endif %}</p>
+          <dl class="metrics">
+            <div><dt>Positivo</dt><dd>{{ summary.positive }}%</dd></div>
+            <div><dt>Neutral</dt><dd>{{ summary.neutral }}%</dd></div>
+            <div><dt>Negativo</dt><dd>{{ summary.negative }}%</dd></div>
+          </dl>
+        </article>
+      {% endfor %}
     </div>
-</body>
-
-</html>
+  </section>
+{% endblock %}

@@ -1,226 +1,35 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
+{% block title %}{{ course.name }} · Spanish Sentiment Lab{% endblock %}
+{% block content %}
+  <p><a href="{{ url_for('index') }}">← Volver a cursos</a></p>
+  <section class="hero hero--compact">
+    <p class="eyebrow">Curso {{ course.id }}</p>
+    <h1>{{ course.name }}</h1>
+    <p>Comparta un comentario en español para ejecutar el clasificador local.</p>
+  </section>
 
-<head>
-    <title>{{ course.name }}</title>
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #79ccd7;
-            margin: 0;
-            padding: 0;
-            color: #4a4a4a;
-        }
+  <form method="post" class="card form-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="comment">Comentario</label>
+    <textarea id="comment" name="comment" rows="5" maxlength="{{ max_comment_length }}" required aria-describedby="comment-help"></textarea>
+    <p id="comment-help" class="help">Máximo {{ max_comment_length }} caracteres.</p>
+    <button type="submit">Analizar comentario</button>
+  </form>
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #4a4a4a;
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        button {
-            background-color: #20c997;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #17a2b8;
-        }
-
-        form {
-            background-color: #f8f9fa;
-            padding: 20px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-            margin-bottom: 30px;
-        }
-
-        textarea {
-            width: 100%;
-            resize: none;
-            border-radius: 5px;
-            border: 1px solid #ced4da;
-            padding: 10px;
-            font-size: 16px;
-        }
-
-        .btn {
-            color: white;
-        }
-
-        .btn-secondary {
-            background-color: #6c757d;
-        }
-
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-        }
-
-        .btn-primary:hover {
-            background-color: #0069d9;
-        }
-
-        h2 {
-            margin-bottom: 20px;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        li {
-            background-color: #f8f9fa;
-            border: 1px solid #ccc;
-            padding: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        a {
-            text-decoration: none;
-            display: inline-block;
-            background-color: #6c757d;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        a:hover {
-            background-color: #5a6268;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <h1>{{ course.name }}</h1>
-
-        {% if course.image_url %}
-        <div>
-            <img src="{{ course.image_url }}" alt="{{ course.name }} image"
-                style="width: 100%; height: auto; border-radius: 5px;">
-        </div>
-        {% endif %}
-        <button data-url="{{ url_for('generate_image_route', course_id=course.id) }}"
-            onclick="location.href=this.dataset.url" class="btn btn-secondary">Generar nueva imagen</button>
-
-
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <ul class="flashes">
-            {% for message in messages %}
-            <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-        {% endwith %}
-        <form action="{{ url_for('course', course_id=course.id) }}" method="POST" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="comment">Escriba su comentario:</label>
-                <textarea class="form-control" name="comment" id="comment" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="audio_file">Subir archivo de audio:</label>
-                <input type="file" class="form-control-file" name="audio_file" id="audio_file" accept="audio/*">
-            </div>
-            <div class="form-group">
-                <label>Grabar comentario de audio:</label>
-                <div>
-                    <button type="button" class="btn btn-primary" id="recordButton">Grabar</button>
-                    <button type="button" class="btn btn-secondary" id="stopButton" disabled>Detener</button>
-                </div>
-                <audio id="recordedAudio" controls style="display:none;"></audio>
-                <input type="hidden" id="recorded_audio_blob" name="recorded_audio_blob">
-            </div>
-            <button type="submit" class="btn btn-primary">Subir comentario</button>
-        </form>
-
-
-        <h2>Comentarios</h2>
-        <ul>
-            {% for comment in comments %}
-            <li>{{ comment.content }} ({{ comment.sentiment }})</li>
-            {% endfor %}
-        </ul>
-
-        <a href="{{ url_for('index') }}">Regresar a lista de cursos</a>
-        <script>
-            const recordButton = document.getElementById("recordButton");
-            const stopButton = document.getElementById("stopButton");
-            const recordedAudio = document.getElementById("recordedAudio");
-            const recordedAudioBlobInput = document.getElementById("recorded_audio_blob");
-
-            let mediaRecorder;
-            let chunks = [];
-
-            recordButton.onclick = async () => {
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    alert("Su navegador no admite la grabación de audio.");
-                    return;
-                }
-
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
-
-                    mediaRecorder.ondataavailable = (e) => {
-                        chunks.push(e.data);
-                    };
-
-                    mediaRecorder.onstop = () => {
-                        const blob = new Blob(chunks, { type: "audio/webm" });
-                        const url = URL.createObjectURL(blob);
-
-                        recordedAudio.src = url;
-                        recordedAudio.style.display = "block";
-                        recordedAudioBlobInput.value = `data:audio/webm;base64,${btoa(String.fromCharCode(...new Uint8Array(blob)))}`;
-                    };
-
-                    mediaRecorder.start();
-                    recordButton.disabled = true;
-                    stopButton.disabled = false;
-                } catch (err) {
-                    alert("Error al grabar audio: " + err);
-                }
-            };
-
-            stopButton.onclick = () => {
-                if (mediaRecorder) {
-                    mediaRecorder.stop();
-                    recordButton.disabled = false;
-                    stopButton.disabled = true;
-                }
-            };
-        </script>
-
-
-    </div>
-</body>
-
-</html>
+  <section aria-labelledby="comments-heading">
+    <h2 id="comments-heading">Comentarios recientes</h2>
+    {% if comments %}
+      <div class="stack">
+        {% for comment in comments %}
+          <article class="card comment">
+            <span class="badge badge--{{ comment.sentiment }}">{{ comment.sentiment }}</span>
+            <p>{{ comment.content }}</p>
+            <time>{{ comment.created_at }}</time>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty">Todavía no hay comentarios para este curso.</p>
+    {% endif %}
+  </section>
+{% endblock %}

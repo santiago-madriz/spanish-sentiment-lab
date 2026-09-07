@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Página no encontrada · Spanish Sentiment Lab{% endblock %}
+{% block content %}
+  <section class="hero">
+    <p class="eyebrow">404</p>
+    <h1>Ese curso no existe.</h1>
+    <p>Revise la dirección o vuelva a la lista de cursos.</p>
+    <p><a class="button" href="{{ url_for('index') }}">Ver cursos</a></p>
+  </section>
+{% endblock %}
