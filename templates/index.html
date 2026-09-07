@@ -1,29 +1,38 @@
 {% extends "base.html" %}
 {% block title %}Cursos · Spanish Sentiment Lab{% endblock %}
 {% block content %}
-  <section class="hero">
-    <p class="eyebrow">API + web application</p>
-    <h1>Explore course feedback without hiding the quality risks.</h1>
-    <p>
-      This lab turns Spanish comments into a reproducible positive, negative, or
-      neutral signal. The default analyzer is intentionally simple so every result
-      can be understood and tested.
-    </p>
+  <section class="hero hero--home">
+    <div class="hero-copy">
+      <p class="eyebrow"><span></span> Inteligencia de opinión en español</p>
+      <h1>Entiende lo que tus estudiantes <em>realmente sienten.</em></h1>
+      <p class="hero-lede">Convierte comentarios abiertos en señales claras de sentimiento. Elige un curso, analiza una opinión y observa cómo evoluciona la experiencia.</p>
+      <div class="hero-actions">
+        <a class="button" href="#courses-heading">Explorar cursos <span aria-hidden="true">↓</span></a>
+        <span class="privacy-note"><span aria-hidden="true">◈</span> Procesamiento privado</span>
+      </div>
+    </div>
+    <div class="signal-card" aria-label="Ejemplo de distribución de sentimiento">
+      <div class="signal-head"><span>Análisis en tiempo real</span><span class="live-dot">LIVE</span></div>
+      <div class="signal-score"><strong>84</strong><span>/ 100<br>sentimiento</span></div>
+      <div class="signal-bars" aria-hidden="true"><i style="height:32%"></i><i style="height:48%"></i><i style="height:41%"></i><i style="height:64%"></i><i style="height:58%"></i><i style="height:78%"></i><i style="height:70%"></i><i style="height:92%"></i><i style="height:84%"></i></div>
+      <div class="signal-legend"><span><i class="positive"></i> Positivo 68%</span><span><i class="neutral"></i> Neutral 23%</span><span><i class="negative"></i> Negativo 9%</span></div>
+    </div>
   </section>
 
-  <section aria-labelledby="courses-heading">
-    <h2 id="courses-heading">Cursos</h2>
+  <section class="course-section" aria-labelledby="courses-heading">
+    <div class="section-heading"><div><p class="eyebrow">Espacios de análisis</p><h2 id="courses-heading">Selecciona un curso</h2></div><p>Cada espacio reúne la señal agregada y conserva el contexto de los comentarios.</p></div>
     <div class="grid">
       {% for course in courses %}
         {% set summary = summaries[course.id] %}
         <article class="card">
-          <h3><a href="{{ url_for('course', course_id=course.id) }}">{{ course.name }}</a></h3>
-          <p>{{ summary.total }} comentario{% if summary.total != 1 %}s{% endif %}</p>
+          <div class="card-top"><span class="course-icon" aria-hidden="true">0{{ loop.index }}</span><span class="comment-count">{{ summary.total }} comentario{% if summary.total != 1 %}s{% endif %}</span></div>
+          <h3>{{ course.name }}</h3>
           <dl class="metrics">
             <div><dt>Positivo</dt><dd>{{ summary.positive }}%</dd></div>
             <div><dt>Neutral</dt><dd>{{ summary.neutral }}%</dd></div>
             <div><dt>Negativo</dt><dd>{{ summary.negative }}%</dd></div>
           </dl>
+          <a class="card-link" href="{{ url_for('course', course_id=course.id) }}">Abrir análisis <span aria-hidden="true">↗</span></a>
         </article>
       {% endfor %}
     </div>

@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 {% block title %}{{ course.name }} · Spanish Sentiment Lab{% endblock %}
 {% block content %}
-  <p><a href="{{ url_for('index') }}">← Volver a cursos</a></p>
-  <section class="hero hero--compact">
-    <p class="eyebrow">Curso {{ course.id }}</p>
+  <p><a class="back-link" href="{{ url_for('index') }}">← Todos los cursos</a></p>
+  <section class="hero hero--compact course-hero">
+    <p class="eyebrow">Espacio 0{{ course.id }}</p>
     <h1>{{ course.name }}</h1>
-    <p>Comparta un comentario en español para ejecutar el clasificador local.</p>
+    <p>Descubre el tono, identifica señales y convierte feedback en una lectura accionable.</p>
   </section>
 
-  <form method="post" class="card form-card">
+  <form method="post" class="analysis-panel form-card">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label for="comment">Comentario</label>
-    <textarea id="comment" name="comment" rows="5" maxlength="{{ max_comment_length }}" required aria-describedby="comment-help"></textarea>
-    <p id="comment-help" class="help">Máximo {{ max_comment_length }} caracteres.</p>
-    <button type="submit">Analizar comentario</button>
+    <div class="form-heading"><div><span class="spark" aria-hidden="true">✦</span><div><p class="eyebrow">Nuevo análisis</p><h2>¿Qué dijeron?</h2></div></div><span class="model-chip">ES · Motor local</span></div>
+    <label class="sr-only" for="comment">Comentario en español</label>
+    <div class="textarea-wrap"><textarea id="comment" name="comment" rows="6" maxlength="{{ max_comment_length }}" required aria-describedby="comment-help" placeholder="Escribe o pega aquí un comentario en español…"></textarea><span class="character-count"><b id="character-count">0</b>/{{ max_comment_length }}</span></div>
+    <div class="form-footer"><p id="comment-help" class="help">No incluyas información personal o sensible.</p><button type="submit">Analizar sentimiento <span aria-hidden="true">✦</span></button></div>
   </form>
 
   <section aria-labelledby="comments-heading">
-    <h2 id="comments-heading">Comentarios recientes</h2>
+    <div class="section-heading compact"><div><p class="eyebrow">Historial</p><h2 id="comments-heading">Análisis recientes</h2></div></div>
     {% if comments %}
       <div class="stack">
         {% for comment in comments %}
