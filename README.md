@@ -6,6 +6,14 @@ A small Flask application used to demonstrate API, data, security, and web quali
 
 The application uses OpenAI when `OPENAI_API_KEY` is configured and falls back to a transparent keyword baseline for reproducible offline development. Both engines share the same `Analyzer` contract and quality checks.
 
+## Product experience
+
+- Responsive dark interface for browsing courses and analyzing feedback
+- Clear positive, negative, and neutral result states
+- Visible analyzer status so local and AI-backed results are not confused
+- Per-course comment history backed by SQLite
+- Accessible forms, validation feedback, focus states, and mobile layouts
+
 ## What this demonstrates
 
 - API contract and negative-path testing with `pytest`
@@ -13,6 +21,7 @@ The application uses OpenAI when `OPENAI_API_KEY` is configured and falls back t
 - CSRF protection for state-changing browser requests
 - Input normalization, required-field checks, and length boundaries
 - Accessible templates, clear focus states, and semantic landmarks
+- Optional OpenAI-backed classification behind the same injectable analyzer contract
 - Static analysis, type checks, coverage thresholds, and dependency review in CI
 - Container-ready configuration without committed credentials
 
