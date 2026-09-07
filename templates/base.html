@@ -15,7 +15,7 @@
         <span class="brand-mark" aria-hidden="true">S</span>
         <span>Sentimiento<span class="brand-dot">.ai</span></span>
       </a>
-      <div class="engine-status"><span></span> Motor disponible</div>
+      <div class="engine-status{% if not openai_enabled %} engine-status--offline{% endif %}"><span></span> {% if openai_enabled %}OpenAI activo{% else %}Modo local · OpenAI desactivado{% endif %}</div>
     </header>
     <main id="main-content">
       {% with messages = get_flashed_messages(with_categories=true) %}

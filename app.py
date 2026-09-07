@@ -193,6 +193,14 @@ def create_app(test_config: Mapping[str, object] | None = None) -> Flask:
     with app.app_context():
         init_db()
 
+    @app.context_processor
+    def analyzer_status() -> dict[str, bool]:
+        return {
+            "openai_enabled": isinstance(
+                current_app.extensions["sentiment_analyzer"], OpenAIAnalyzer
+            )
+        }
+
     @app.get("/")
     def index() -> str:
         courses = get_db().execute("SELECT id, name FROM courses ORDER BY id").fetchall()
@@ -240,9 +248,7 @@ def create_app(test_config: Mapping[str, object] | None = None) -> Flask:
             course=selected_course,
             comments=comments,
             max_comment_length=current_app.config["MAX_COMMENT_LENGTH"],
-            ai_enabled=isinstance(
-                current_app.extensions["sentiment_analyzer"], OpenAIAnalyzer
-            ),
+            ai_enabled=isinstance(current_app.extensions["sentiment_analyzer"], OpenAIAnalyzer),
         )
 
     @app.get("/api/health")

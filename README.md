@@ -2,13 +2,18 @@
 
 [![Quality](https://github.com/santiago-madriz/spanish-sentiment-lab/actions/workflows/quality.yml/badge.svg)](https://github.com/santiago-madriz/spanish-sentiment-lab/actions/workflows/quality.yml)
 
+[Live UI demo](https://santiagomadriz.com/spanish-sentiment-lab/) · [Architecture](docs/ARCHITECTURE.md) · [Test strategy](docs/TEST_STRATEGY.md)
+
 A small Flask application used to demonstrate API, data, security, and web quality engineering. It classifies Spanish course feedback as positive, negative, or neutral through both a browser workflow and a JSON API.
 
 The application uses OpenAI when `OPENAI_API_KEY` is configured and falls back to a transparent keyword baseline for reproducible offline development. Both engines share the same `Analyzer` contract and quality checks.
 
+The public GitHub Pages experience is an interactive static product demo. OpenAI tokens are intentionally disabled there, so its charts and classifications use clearly labeled sample data and no visitor text is sent to OpenAI.
+
 ## Product experience
 
 - Responsive dark interface for browsing courses and analyzing feedback
+- Interactive GitHub Pages preview with charts and selectable sample comments
 - Clear positive, negative, and neutral result states
 - Visible analyzer status so local and AI-backed results are not confused
 - Per-course comment history backed by SQLite

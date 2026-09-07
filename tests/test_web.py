@@ -7,6 +7,8 @@ def test_course_catalog_has_accessible_landmarks(client: FlaskClient) -> None:
     assert response.status_code == 200
     assert b"<main" in response.data
     assert "Inteligencia Artificial" in response.text
+    assert "La integración con OpenAI está desactivada." in response.text
+    assert "DATOS DEMO" in response.text
 
 
 def test_comment_can_be_classified_and_persisted(client: FlaskClient) -> None:
