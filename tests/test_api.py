@@ -1,6 +1,8 @@
 import pytest
 from flask.testing import FlaskClient
 
+import app as app_module
+
 
 def test_health_contract(client: FlaskClient) -> None:
     response = client.get("/api/health")
@@ -43,3 +45,42 @@ def test_api_validation(
 
     assert response.status_code == status
     assert response.get_json() == {"error": error}
+
+
+class FakeOpenAIResponse:
+    def __init__(self, result: str) -> None:
+        self.result = result
+
+    def __enter__(self) -> "FakeOpenAIResponse":
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        return None
+
+    def read(self) -> bytes:
+        return (
+            '{"output":[{"content":[{"type":"output_text","text":"'
+            + self.result
+            + '"}]}]}'
+        ).encode()
+
+
+def test_openai_analyzer_reads_responses_output(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        app_module,
+        "urlopen",
+        lambda *_args, **_kwargs: FakeOpenAIResponse("positive"),
+    )
+
+    assert app_module.OpenAIAnalyzer("test-key").classify("Me encantó") == "positive"
+
+
+def test_openai_analyzer_rejects_unknown_label(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        app_module,
+        "urlopen",
+        lambda *_args, **_kwargs: FakeOpenAIResponse("mixed"),
+    )
+
+    with pytest.raises(ValueError, match="unsupported sentiment"):
+        app_module.OpenAIAnalyzer("test-key").classify("Ambivalente")

@@ -4,7 +4,7 @@
 
 A small Flask application used to demonstrate API, data, security, and web quality engineering. It classifies Spanish course feedback as positive, negative, or neutral through both a browser workflow and a JSON API.
 
-The application favors **reproducibility over AI theatre**: its default classifier is a transparent keyword baseline that runs offline. A trained model can be injected behind the same `Analyzer` interface and evaluated against the same contracts.
+The application uses OpenAI when `OPENAI_API_KEY` is configured and falls back to a transparent keyword baseline for reproducible offline development. Both engines share the same `Analyzer` contract and quality checks.
 
 ## What this demonstrates
 
@@ -27,6 +27,8 @@ flask --app app run
 ```
 
 Open `http://127.0.0.1:5000`. The SQLite database is created under `instance/`.
+
+To enable AI analysis, copy `.env.example`, export `OPENAI_API_KEY`, and optionally set `OPENAI_MODEL`. Never commit the key. Without it, the UI clearly identifies the local deterministic engine.
 
 ### API example
 

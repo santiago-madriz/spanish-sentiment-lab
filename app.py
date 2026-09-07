@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import re
 import secrets
@@ -7,6 +8,7 @@ import sqlite3
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Protocol, cast
+from urllib.request import Request, urlopen
 
 from flask import (
     Flask,
@@ -65,6 +67,61 @@ class SpanishKeywordAnalyzer:
         if score < 0:
             return "negative"
         return "neutral"
+
+
+class OpenAIAnalyzer:
+    """Spanish sentiment classifier backed by the OpenAI Responses API."""
+
+    endpoint = "https://api.openai.com/v1/responses"
+
+    def __init__(self, api_key: str, model: str = "gpt-4.1-mini") -> None:
+        self.api_key = api_key
+        self.model = model
+
+    def classify(self, text: str) -> str:
+        body = json.dumps(
+            {
+                "model": self.model,
+                "instructions": (
+                    "Clasifica el sentimiento del comentario en español. Responde únicamente "
+                    "con una de estas palabras exactas: positive, negative, neutral."
+                ),
+                "input": text,
+                "max_output_tokens": 16,
+                "store": False,
+            }
+        ).encode("utf-8")
+        request_data = Request(  # noqa: S310
+            self.endpoint,
+            data=body,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        with urlopen(request_data, timeout=15) as response:  # noqa: S310
+            payload = json.loads(response.read().decode("utf-8"))
+        output_text = payload.get("output_text", "")
+        if not output_text:
+            output_text = "".join(
+                str(content.get("text", ""))
+                for item in payload.get("output", [])
+                if isinstance(item, dict)
+                for content in item.get("content", [])
+                if isinstance(content, dict) and content.get("type") == "output_text"
+            )
+        result = str(output_text).strip().casefold()
+        if result not in {"positive", "negative", "neutral"}:
+            raise ValueError("AI analyzer returned an unsupported sentiment")
+        return result
+
+
+def _default_analyzer() -> Analyzer:
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if api_key:
+        return OpenAIAnalyzer(api_key, os.getenv("OPENAI_MODEL", "gpt-4.1-mini"))
+    return SpanishKeywordAnalyzer()
 
 
 def get_db() -> sqlite3.Connection:
@@ -128,7 +185,7 @@ def create_app(test_config: Mapping[str, object] | None = None) -> Flask:
         app.config.from_mapping(test_config)
 
     app.extensions["sentiment_analyzer"] = app.config.get(
-        "SENTIMENT_ANALYZER", SpanishKeywordAnalyzer()
+        "SENTIMENT_ANALYZER", _default_analyzer()
     )
     app.teardown_appcontext(close_db)
     csrf.init_app(app)
@@ -183,6 +240,9 @@ def create_app(test_config: Mapping[str, object] | None = None) -> Flask:
             course=selected_course,
             comments=comments,
             max_comment_length=current_app.config["MAX_COMMENT_LENGTH"],
+            ai_enabled=isinstance(
+                current_app.extensions["sentiment_analyzer"], OpenAIAnalyzer
+            ),
         )
 
     @app.get("/api/health")
